@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>日记APP</title>
+    <style>
+      /* 全局样式 */
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #e8f5e9; /* 嫩绿色背景 */
+        color: #333;
+      }
+
+      header {
+        background-color: #81c784; /* 主绿色 */
+        color: white;
+        padding: 10px;
+        text-align: center;
+        font-size: 1.5em;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 10px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .add-btn {
+        background-color: #66bb6a;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        font-size: 30px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+
+      .diary-entry {
+        margin-bottom: 15px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+
+      .diary-entry .time {
+        font-size: 0.9em;
+        color: #666;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .diary-entry .delete-btn {
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+      }
+
+      .diary-entry .delete-btn img {
+        width: 20px;
+        height: 20px;
+      }
+
+      textarea,
+      input[type="file"] {
+        width: 100%;
+        padding: 8px;
+        margin-top: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        resize: none;
+        box-sizing: border-box;
+      }
+
+      button {
+        background-color: #81c784;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1em;
+      }
+
+      button:hover {
+        background-color: #66bb6a;
+      }
+
+      @media (max-width: 600px) {
+        .container {
+          margin: 10px;
+          padding: 10px;
+        }
+
+        .add-btn {
+          width: 45px;
+          height: 45px;
+          font-size: 28px;
+        }
+
+        #diary-modal {
+          width: 90%;
+          max-width: 90%;
+          left: 5%;
+          transform: translate(0, -50%);
+        }
+
+        .modal-content {
+          padding: 10px;
+        }
+      }
+
+      .modal-content {
+        width: 100%;
+        max-width: 400px;
+        padding: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 页面顶部 -->
+    <header>我的日记</header>
+
+    <!-- 日记展示区 -->
+    <div class="container" id="diary-container">
+      <!-- 动态添加日记条目 -->
+    </div>
+
+    <!-- 添加日记按钮 -->
+    <button class="add-btn" onclick="openDiaryModal()">+</button>
+
+    <!-- 日记编辑弹窗 -->
+    <div
+      id="diary-modal"
+      style="
+        display: none;
+        padding: 20px;
+        background: #fff;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        max-width: 90%;
+      "
+    >
+      <div class="modal-content">
+        <textarea
+          id="diary-text"
+          rows="5"
+          placeholder="写下你的日记..."
+        ></textarea>
+        <input type="file" id="diary-image" accept="image/*" />
+        <div style="margin-top: 10px; text-align: right">
+          <button onclick="saveDiary()">保存</button>
+          <button onclick="closeDiaryModal()">取消</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const diaryContainer = document.getElementById("diary-container");
+      const diaryModal = document.getElementById("diary-modal");
+
+      // 打开日记编辑弹窗
+      function openDiaryModal() {
+        diaryModal.style.display = "block";
+      }
+
+      // 关闭日记编辑弹窗
+      function closeDiaryModal() {
+        diaryModal.style.display = "none";
+      }
+
+      // 保存日记
+      function saveDiary() {
+        const text = document.getElementById("diary-text").value;
+        const imageInput = document.getElementById("diary-image");
+        const time = new Date().toLocaleString();
+
+        if (!text.trim() && !imageInput.files.length) {
+          alert("请写点内容或上传图片！");
+          return;
+        }
+
+        // 创建日记条目
+        const entry = document.createElement("div");
+        entry.className = "diary-entry";
+
+        const timeDiv = document.createElement("div");
+        timeDiv.className = "time";
+        timeDiv.innerHTML = `
+                <span>${time}</span>
+                <button class="delete-btn" onclick="deleteDiary(this)"><img src="https://img.icons8.com/ios-glyphs/30/trash.png" alt="删除"></button>
+            `;
+        entry.appendChild(timeDiv);
+
+        if (text.trim()) {
+          const textPara = document.createElement("p");
+          textPara.textContent = text;
+          entry.appendChild(textPara);
+        }
+
+        if (imageInput.files.length) {
+          const img = document.createElement("img");
+          img.src = URL.createObjectURL(imageInput.files[0]);
+          img.style.maxWidth = "100%";
+          img.style.marginTop = "10px";
+          entry.appendChild(img);
+        }
+
+        diaryContainer.prepend(entry);
+
+        // 清空输入框和关闭弹窗
+        document.getElementById("diary-text").value = "";
+        document.getElementById("diary-image").value = "";
+        closeDiaryModal();
+      }
+
+      // 删除日记
+      function deleteDiary(button) {
+        if (confirm("确定要删除这篇日记吗？")) {
+          button.parentElement.parentElement.remove();
+        }
+      }
+    </script>
+  </body>
+</html>
